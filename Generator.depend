@@ -1,0 +1,18 @@
+# depslib dependency file v1.0
+1471448588 source:e:\generator\generator\main.cpp
+	<iostream>
+	"generator.h"
+
+1471430158 e:\generator\generator\generator.h
+	"rectGen.h"
+
+1471604182 e:\generator\generator\include\rectgen.h
+	<vector>
+
+1471534814 source:e:\generator\generator\src\rectgen.cpp
+	<iostream>
+	<vector>
+	<cmath>
+	<random>
+	"rectGen.h"
+

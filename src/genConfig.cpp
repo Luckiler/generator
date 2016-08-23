@@ -19,10 +19,11 @@ genConfig::genConfig()
 
 void genConfig::preGenerate()
 {
+    //Menu loop
     bool repeat = true;
     while(repeat)
     {
-        menu.clearScr();
+        menu.splash();
         std::cout << "Canvas dimensions : " << rectGen::length << " x " << rectGen::height;
         std::cout << "\nSeed : " << rectGen::seed;
         std::cout << "\nIterations : " << rectGen::nbrOfIt;
@@ -36,12 +37,12 @@ void genConfig::preGenerate()
         {
         case 1:
             {
-                menu.clearScr();
+                menu.splash();
                 std::cout << "Current length : " << rectGen::length << "\n";
                 std::cout << "Enter new length : ";
                 std::cin >> input;
 
-                if(input > 0 && input < 214783647)
+                if(input > 0 && input < 4294967295)
                 {
                     rectGen::length = input;
                 }
@@ -49,12 +50,12 @@ void genConfig::preGenerate()
             }
         case 2:
             {
-                menu.clearScr();
+                menu.splash();
                 std::cout << "Current height : " << rectGen::height << "\n";
                 std::cout << "Enter new height : ";
                 std::cin >> input;
 
-                if(input > 0 && input < 214783647)
+                if(input > 0 && input < 4294967295)
                 {
                     rectGen::height = input;
                 }
@@ -62,7 +63,7 @@ void genConfig::preGenerate()
             }
         case 3:
             {
-                menu.clearScr();
+                menu.splash();
                 std::cout << "Current seed : " << rectGen::seed << "\n";
                 std::cout << "Enter new seed : ";
                 std::cin >> input;
@@ -75,12 +76,12 @@ void genConfig::preGenerate()
             }
         case 4:
             {
-                menu.clearScr();
+                menu.splash();
                 std::cout << "Current number of iterations to perform : " << rectGen::nbrOfIt << "\n";
                 std::cout << "Enter new number of iterations to perform : ";
                 std::cin >> input;
 
-                if(input > 0 && input < 214783647)
+                if(input > 0 && input < 4294967295)
                 {
                     rectGen::nbrOfIt = input;
                 }

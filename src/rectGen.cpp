@@ -8,9 +8,9 @@
 genConfig genConfig;
 
 int rectGen::height = 50,
-    rectGen::length = 100;
-unsigned int rectGen::seed = 1337,
-             rectGen::nbrOfIt = 100;
+    rectGen::length = 100,
+    rectGen::seed = 1337;
+unsigned int rectGen::nbrOfIt = 100;
 
 rectGen::rectGen()
 {
@@ -22,7 +22,9 @@ void rectGen::initialize(unsigned int avoidRadius)
     bool repeat = true;
     while(repeat)
     {
-        menu.clearScr();
+
+        //Simple menu
+        menu.splash();
         std::cout << "Canvas dimensions : " << rectGen::length << " x " << rectGen::height;
         std::cout << "\nSeed : " << rectGen::seed;
         std::cout << "\nIterations : " << rectGen::nbrOfIt;
@@ -70,7 +72,7 @@ void rectGen::initialize(unsigned int avoidRadius)
     grid[startPoint[0]][startPoint[1]] = genConfig::startPrintChar;
 
     //We assign the grid to the computed one and print it
-    grid = rectGen::iteration(grid, startPoint, rectGen::nbrOfIt, rectGen::seed);
+    grid = rectGen::iteration(grid, startPoint);
     rectGen::print2DVector(grid);
     std::cout << "\n\n 1 - Save to file(WIP)\n 9 - Back\n";
     int input;
@@ -228,16 +230,16 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, unsigned int test
 }
 
 std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>> grid,
-                            unsigned int startPoint[2], unsigned int nbrOfIt, int seed)
+                            unsigned int startPoint[2])
 {
-    int previousPoint[2], direction, canPrintTrial, errTest = 0;
-    std::vector<int> canPrintPercent;
+    unsigned int previousPoint[2], direction, canPrintTrial, errTest = 0;
+    std::vector<unsigned int> canPrintPercent;
     float progress = 0, percentPrintCondition = 2;
 
     std::cout << "                                             100%\n";
 
     //Iterates as many times as the user chose to
-    for(unsigned int i = 0; i < nbrOfIt; i++)
+    for(unsigned int i = 0; i < rectGen::nbrOfIt; i++)
     {
         //We store the previous point of iteration so we can come back to it
         //if the current iteration does not follow the rules
@@ -247,10 +249,10 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
         //Simple manipulation of the seed so we have a fresh one each time
         //we start an iteration. Not using rand so we can repeat the pattern
         //if we enter the same seed again
-        seed = ((seed>>1) * 11) + 17;
+        rectGen::seed = ((rectGen::seed>>1) * 11) + 17;
 
         //We use the seed to set the parameters for the generation
-        direction = std::abs(seed % 8);
+        direction = std::abs(rectGen::seed % 8);
         canPrintTrial = std::abs(seed % 100);
 
         //We get the current condition for generation
@@ -315,28 +317,28 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
             break;
         }
 
-        //Additional conditions for the iteration to be skipped.
-        //basically it prevents it from writing over itself or outside
-        //the bounds of the canvas (2D vector), from getting stuck and
-        //limits the chance to iterate next to a previous location
+        //Additional conditions for the iteration to be skipped. Basically it
+        //prevents it from writing over itself or outside the bounds of the
+        //canvas (2D vector), from getting stuck and limits the chance to iterate
+        //next to a previous location
         if(startPoint[0] < 0 ||
-                startPoint[1] < 0 ||
-                startPoint[0] > grid.size() - 1||
-                startPoint[1] > grid[0].size() - 1||
-                grid[startPoint[0]][startPoint[1]] == genConfig::printChar ||
-                grid[startPoint[0]][startPoint[1]] == genConfig::startPrintChar ||
-                grid[startPoint[0]][startPoint[1]] == genConfig::teleportPrintChar ||
-                rectGen::stuckTest(grid, startPoint) ||
-                (rectGen::isCloseToPrint(grid, startPoint)))
+           startPoint[1] < 0 ||
+           startPoint[0] > grid.size() - 1||
+           startPoint[1] > grid[0].size() - 1||
+           grid[startPoint[0]][startPoint[1]] == genConfig::printChar ||
+           grid[startPoint[0]][startPoint[1]] == genConfig::startPrintChar ||
+           grid[startPoint[0]][startPoint[1]] == genConfig::teleportPrintChar ||
+           rectGen::stuckTest(grid, startPoint) ||
+           (rectGen::isCloseToPrint(grid, startPoint)))
 
         {
+            //If we can't iterate, rollback to the previous point
             startPoint[0] = previousPoint[0];
             startPoint[1] = previousPoint[1];
             i--;
 
             //We keep track of the number of times we refuse.
-            //It's a way of knowing if we got stuck. If we got stuck,
-            //end the generation
+            //It's a way of knowing if we got stuck.
             errTest++;
 
             //If stuck for too long teleports to elsewhere on the canvas
@@ -356,6 +358,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
                 }
             }
 
+            //If stuck for way too long, then we know we're out of places to go
             if(errTest > 4000)
             {
                 std::cout << " Generation stuck, stopping...";
@@ -363,7 +366,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
             }
         }
 
-        //if we can generate a the point of iteration, store it and
+        //If we can generate a the point of iteration, store it and
         //reset the "stuck counter"
         else
         {
@@ -372,7 +375,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
         }
 
         //Simple pseudo progress bar
-        progress = (float)i * 100 / (float)nbrOfIt;
+        progress = (float)i * 100 / (float)rectGen::nbrOfIt;
         if(progress == percentPrintCondition)
         {
             std::cout << ".";
@@ -386,13 +389,13 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
     return grid;
 }
 
-std::vector<int> rectGen::setPrintPercents(std::vector<std::vector<char>> grid,
+std::vector<unsigned int> rectGen::setPrintPercents(std::vector<std::vector<char>> grid,
         unsigned int testPoint[2])
 {
     //Here we calculate the distance between the point and the border in %
     //so we can modify the probability it prints in this direction. It prevents
     //running into the border and sticking there
-    std::vector<int> testResult = {0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> testResult = {0, 0, 0, 0, 0, 0, 0, 0};
     if (testPoint[0] * 100 / grid.size() < 30)
     {
         testResult[7] = 40;

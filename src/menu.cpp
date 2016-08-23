@@ -9,9 +9,11 @@ menu::menu()
 
 void menu::general()
 {
+    //This is actually the main loop
     bool repeat = true;
     while(repeat)
     {
+        //Simple menu
         menu::splash();
         std::cout << " 1 - Generate\n 2 - Configure\n 9 - Exit\n";
         int input;
@@ -20,17 +22,18 @@ void menu::general()
         {
         case 1:
             {
-            //Starts the generation
+            //Starts the pregeneration process
             rectGen rectGen;
             rectGen.initialize(genConfig::avoidRadius);
             break;
             }
         case 2:
             {
-            //starts the configuration menu
+            //Starts the configuration menu(WIP)
             break;
             }
         case 9:
+            //Breaks the while loop
             repeat = false;
             break;
         default:
@@ -42,7 +45,7 @@ void menu::general()
 void menu::splash()
 {
     menu::clearScr();
-    std::cout << " - Random 'pattern' generator - \n\n";
+    std::cout << " - Random 'pattern' generator - \n\n\n\n";
 }
 
 void menu::clearScr()

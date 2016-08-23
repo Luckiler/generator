@@ -20,3 +20,5 @@
 	- Generation menu
 	- Generation configurations changer menu
  - Resolved all the build warning (and the stability too). No more signed int when it doesn't needs to
+ - unsigned even more ints that didn't needed to be signed
+ - Reduced the condition to consider the generator stuck from 4000 to 1000 invalid iterations;

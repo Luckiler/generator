@@ -1,7 +1,5 @@
 # Changelog
 
-Link to the releases https://drive.google.com/drive/folders/0BxaYKfNl27draHJNc05udHdqeUU?usp=sharing
-
 ## 18/08/2016	
  - added explanation comments in the source code
  - tweaked the border avoidance values (decreased fom 40% 30% 20% to 30% 20% 10%)

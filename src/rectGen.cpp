@@ -3,35 +3,82 @@
 #include <cmath>
 #include <random>
 #include "rectGen.h"
+#include "genConfig.h"
 
-rectGen::rectGen(int seed, int height, int length, int nbrOfIt)
+genConfig genConfig;
+
+int rectGen::height = 50,
+    rectGen::length = 100;
+unsigned int rectGen::seed = 1337,
+             rectGen::nbrOfIt = 100;
+
+rectGen::rectGen()
 {
-    std::cout << "Started rectangle shaped generator module" << std::endl;
-    /*
-    Here we prepare the 2D vector by filling it
-    with ' ' so it is able to hold the
-    later computed values
-    */
-    std::vector<std::vector<char> > grid;
-    grid.resize(height);
-    for (int x = 0; x < height; x++)
+
+}
+
+void rectGen::initialize(unsigned int avoidRadius)
+{
+    bool repeat = true;
+    while(repeat)
     {
-        grid[x].resize(length);
-        for (int y = 0; y < length; y++)
+        menu.clearScr();
+        std::cout << "Canvas dimensions : " << rectGen::length << " x " << rectGen::height;
+        std::cout << "\nSeed : " << rectGen::seed;
+        std::cout << "\nIterations : " << rectGen::nbrOfIt;
+        std::cout << "\n\n 1 - Generate with current settings\n 2 - Change settings\n";
+
+        int input;
+        std::cin >> input;
+
+        switch(input)
+        {
+        case 1:
+            {
+                repeat = false;
+                break;
+            }
+        case 2:
+            {
+                genConfig.preGenerate();
+                break;
+            }
+        default:
+            {
+                break;
+            }
+        }
+    }
+
+    //Here we prepare the 2D vector by filling it with ' ' so it is able to
+    //hold the later computed values
+    std::vector<std::vector<char> > grid;
+    grid.resize(rectGen::height);
+    for (int x = 0; x < rectGen::height; x++)
+    {
+        grid[x].resize(rectGen::length);
+        for (int y = 0; y < rectGen::length; y++)
         {
             grid[x][y] = ' ';
         }
     }
 
     //We setup the starting point of the pattern
-    int startPoint[2];
-    startPoint[0] = seed % height;
-    startPoint[1] = seed % length;
-    grid[startPoint[0]][startPoint[1]] = 'S';
+    unsigned int startPoint[2];
+    startPoint[0] = seed % rectGen::height;
+    startPoint[1] = seed % rectGen::length;
+    grid[startPoint[0]][startPoint[1]] = genConfig::startPrintChar;
 
     //We assign the grid to the computed one and print it
-    grid = rectGen::iteration(grid, startPoint, nbrOfIt, seed);
+    grid = rectGen::iteration(grid, startPoint, rectGen::nbrOfIt, rectGen::seed);
     rectGen::print2DVector(grid);
+    std::cout << "\n\n 1 - Save to file(WIP)\n 9 - Back\n";
+    int input;
+    std::cin >> input;
+    if (input == 1)
+    {
+
+    }
 }
 
 void rectGen::print2DVector(std::vector<std::vector<char>> grid)
@@ -40,27 +87,27 @@ void rectGen::print2DVector(std::vector<std::vector<char>> grid)
 
     //Here we create an additional frame around the borders of the canvas
     //for visual purpose at the same time that we print it
-    for (int a = 0; a < grid[0].size() + 2; a++)
+    for (unsigned int a = 0; a < grid[0].size() + 2; a++)
     {
         std::cout << "#";
     }
     std::cout << "\n";
-    for (int x = 0; x < grid.size(); x++)
+    for (unsigned int x = 0; x < grid.size(); x++)
     {
         std::cout << "#";
-        for (int y = 0; y < grid[x].size(); y++)
+        for (unsigned int y = 0; y < grid[x].size(); y++)
         {
             std::cout << grid[x][y];
         }
         std::cout << "#\n";
     }
-    for (int b = 0; b < grid[0].size() + 2; b++)
+    for (unsigned int b = 0; b < grid[0].size() + 2; b++)
     {
         std::cout << "#";
     }
 }
 
-bool rectGen::stuckTest(std::vector<std::vector<char>> grid, int testPoint[2])
+bool rectGen::stuckTest(std::vector<std::vector<char>> grid, unsigned int testPoint[2])
 {
     //Tests if the iteration was going to get stuck. With nested ifs to make
     //sure we are not testing inexistent locations and to optimize the test process
@@ -77,32 +124,33 @@ bool rectGen::stuckTest(std::vector<std::vector<char>> grid, int testPoint[2])
 
 }
 
-bool rectGen::isCloseToPrint(std::vector<std::vector<char>> grid, int testPoint[2])
+bool rectGen::isCloseToPrint(std::vector<std::vector<char>> grid, unsigned int testPoint[2])
 {
-     //Tests if the iteration is going to be next to another previous printed
-     //iteration and quantifies how many times its close to it. Nested ifs so
-     //we don't check inexistent tiles
+    //Tests if the iteration is going to be next to another previous printed
+    //iteration and quantifies how many times its close to it. Nested ifs so
+    //we don't check inexistent tiles
     int counter = rectGen::neighborScan(grid, testPoint);
 
     if (counter > 1)
     {
         return true;
-    } else
+    }
+    else
     {
         return false;
     }
 }
 
-int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
+int rectGen::neighborScan(std::vector<std::vector<char>> grid, unsigned int testPoint[2])
 {
     int counter = 0;
     if (testPoint[0] < grid.size() - 1)
     {
         if(testPoint[1] < grid[0].size() - 1)
         {
-            if (grid[testPoint[0] + 1][testPoint[1] + 1] == '@' ||
-                grid[testPoint[0] + 1][testPoint[1] + 1] == 'S' ||
-                grid[testPoint[0] + 1][testPoint[1] + 1] == 'T')
+            if (grid[testPoint[0] + 1][testPoint[1] + 1] == genConfig::printChar ||
+                    grid[testPoint[0] + 1][testPoint[1] + 1] == genConfig::startPrintChar ||
+                    grid[testPoint[0] + 1][testPoint[1] + 1] == genConfig::teleportPrintChar)
             {
                 counter++;
             }
@@ -110,17 +158,17 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
 
         if(testPoint[1] > 0)
         {
-            if (grid[testPoint[0] + 1][testPoint[1] - 1] == '@' ||
-                grid[testPoint[0] + 1][testPoint[1] - 1] == 'S' ||
-                grid[testPoint[0] + 1][testPoint[1] - 1] == 'T')
+            if (grid[testPoint[0] + 1][testPoint[1] - 1] == genConfig::printChar ||
+                    grid[testPoint[0] + 1][testPoint[1] - 1] == genConfig::startPrintChar ||
+                    grid[testPoint[0] + 1][testPoint[1] - 1] == genConfig::teleportPrintChar)
             {
                 counter++;
             }
         }
 
-        if (grid[testPoint[0] + 1][testPoint[1]] == '@' ||
-            grid[testPoint[0] + 1][testPoint[1]] == 'S' ||
-            grid[testPoint[0] + 1][testPoint[1]] == 'T')
+        if (grid[testPoint[0] + 1][testPoint[1]] == genConfig::printChar ||
+                grid[testPoint[0] + 1][testPoint[1]] == genConfig::startPrintChar ||
+                grid[testPoint[0] + 1][testPoint[1]] == genConfig::teleportPrintChar)
         {
             counter++;
         }
@@ -130,17 +178,17 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
     {
         if(testPoint[0] > 0)
         {
-            if (grid[testPoint[0] - 1][testPoint[1] + 1] == '@' ||
-                grid[testPoint[0] - 1][testPoint[1] + 1] == 'S' ||
-                grid[testPoint[0] - 1][testPoint[1] + 1] == 'T')
+            if (grid[testPoint[0] - 1][testPoint[1] + 1] == genConfig::printChar ||
+                    grid[testPoint[0] - 1][testPoint[1] + 1] == genConfig::startPrintChar ||
+                    grid[testPoint[0] - 1][testPoint[1] + 1] == genConfig::teleportPrintChar)
             {
                 counter++;
             }
         }
 
-        if (grid[testPoint[0]][testPoint[1] + 1] == '@' ||
-            grid[testPoint[0]][testPoint[1] + 1] == 'S' ||
-            grid[testPoint[0]][testPoint[1] + 1] == 'T')
+        if (grid[testPoint[0]][testPoint[1] + 1] == genConfig::printChar ||
+                grid[testPoint[0]][testPoint[1] + 1] == genConfig::startPrintChar ||
+                grid[testPoint[0]][testPoint[1] + 1] == genConfig::teleportPrintChar)
         {
             counter++;
         }
@@ -150,17 +198,17 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
     {
         if(testPoint[0] > 0 && testPoint[1] > 0)
         {
-            if (grid[testPoint[0] - 1][testPoint[1] - 1] == '@' ||
-                grid[testPoint[0] - 1][testPoint[1] - 1] == 'S' ||
-                grid[testPoint[0] - 1][testPoint[1] - 1] == 'T')
+            if (grid[testPoint[0] - 1][testPoint[1] - 1] == genConfig::printChar ||
+                    grid[testPoint[0] - 1][testPoint[1] - 1] == genConfig::startPrintChar ||
+                    grid[testPoint[0] - 1][testPoint[1] - 1] == genConfig::teleportPrintChar)
             {
                 counter++;
             }
         }
 
-        if (grid[testPoint[0]][testPoint[1] - 1] == '@' ||
-            grid[testPoint[0]][testPoint[1] - 1] == 'S' ||
-            grid[testPoint[0]][testPoint[1] - 1] == 'T')
+        if (grid[testPoint[0]][testPoint[1] - 1] == genConfig::printChar ||
+                grid[testPoint[0]][testPoint[1] - 1] == genConfig::startPrintChar ||
+                grid[testPoint[0]][testPoint[1] - 1] == genConfig::teleportPrintChar)
         {
             counter++;
         }
@@ -168,9 +216,9 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
 
     if (testPoint[0] > 0)
     {
-        if (grid[testPoint[0] - 1][testPoint[1]] == '@' ||
-            grid[testPoint[0] - 1][testPoint[1]] == 'S' ||
-            grid[testPoint[0] - 1][testPoint[1]] == 'T')
+        if (grid[testPoint[0] - 1][testPoint[1]] == genConfig::printChar ||
+                grid[testPoint[0] - 1][testPoint[1]] == genConfig::startPrintChar ||
+                grid[testPoint[0] - 1][testPoint[1]] == genConfig::teleportPrintChar)
         {
             counter++;
         }
@@ -180,7 +228,7 @@ int rectGen::neighborScan(std::vector<std::vector<char>> grid, int testPoint[2])
 }
 
 std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>> grid,
-                                                  int startPoint[2], int nbrOfIt, int seed)
+                            unsigned int startPoint[2], unsigned int nbrOfIt, int seed)
 {
     int previousPoint[2], direction, canPrintTrial, errTest = 0;
     std::vector<int> canPrintPercent;
@@ -189,7 +237,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
     std::cout << "                                             100%\n";
 
     //Iterates as many times as the user chose to
-    for(int i = 0; i < nbrOfIt; i++)
+    for(unsigned int i = 0; i < nbrOfIt; i++)
     {
         //We store the previous point of iteration so we can come back to it
         //if the current iteration does not follow the rules
@@ -272,19 +320,20 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
         //the bounds of the canvas (2D vector), from getting stuck and
         //limits the chance to iterate next to a previous location
         if(startPoint[0] < 0 ||
-           startPoint[1] < 0 ||
-           startPoint[0] > grid.size() - 1||
-           startPoint[1] > grid[0].size() - 1||
-           grid[startPoint[0]][startPoint[1]] == '@' ||
-           grid[startPoint[0]][startPoint[1]] == 'S' ||
-           grid[startPoint[0]][startPoint[1]] == 'T' ||
-           rectGen::stuckTest(grid, startPoint) ||
-           (rectGen::isCloseToPrint(grid, startPoint)))
+                startPoint[1] < 0 ||
+                startPoint[0] > grid.size() - 1||
+                startPoint[1] > grid[0].size() - 1||
+                grid[startPoint[0]][startPoint[1]] == genConfig::printChar ||
+                grid[startPoint[0]][startPoint[1]] == genConfig::startPrintChar ||
+                grid[startPoint[0]][startPoint[1]] == genConfig::teleportPrintChar ||
+                rectGen::stuckTest(grid, startPoint) ||
+                (rectGen::isCloseToPrint(grid, startPoint)))
 
         {
             startPoint[0] = previousPoint[0];
             startPoint[1] = previousPoint[1];
             i--;
+
             //We keep track of the number of times we refuse.
             //It's a way of knowing if we got stuck. If we got stuck,
             //end the generation
@@ -293,7 +342,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
             //If stuck for too long teleports to elsewhere on the canvas
             if (errTest > 100)
             {
-                int teleportPoint[2];
+                unsigned int teleportPoint[2];
                 teleportPoint[0] = seed % grid.size();
                 teleportPoint[1] = seed % grid[0].size();
                 if(rectGen::stuckTest(grid, teleportPoint) == true || rectGen::isCloseToPrint(grid, teleportPoint) == true)
@@ -309,7 +358,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
 
             if(errTest > 4000)
             {
-                std::cout << " Generation stuck here, stopping...";
+                std::cout << " Generation stuck, stopping...";
                 return grid;
             }
         }
@@ -318,7 +367,7 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
         //reset the "stuck counter"
         else
         {
-            grid[startPoint[0]][startPoint[1]] = '@';
+            grid[startPoint[0]][startPoint[1]] = genConfig::printChar;
             errTest = 0;
         }
 
@@ -331,14 +380,14 @@ std::vector<std::vector<char>> rectGen::iteration(std::vector<std::vector<char>>
         }
     }
 
-    //Once we end the generation, we set the final point to 'F'
+    //Once we end the generation, we set the final point to finishPrintChar
     //so we can see where the finished
-    grid[startPoint[0]][startPoint[1]] = 'F';
+    grid[startPoint[0]][startPoint[1]] = genConfig::finishPrintChar;
     return grid;
 }
 
 std::vector<int> rectGen::setPrintPercents(std::vector<std::vector<char>> grid,
-                                           int testPoint[2])
+        unsigned int testPoint[2])
 {
     //Here we calculate the distance between the point and the border in %
     //so we can modify the probability it prints in this direction. It prevents
